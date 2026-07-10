@@ -31,7 +31,8 @@ pip install pybind11 --break-system-packages
 ```
 
 ### Compilar C++
-```bash c++ -O3 -Wall -shared -std=c++17 -fPIC \
+```bash
+c++ -O3 -Wall -shared -std=c++17 -fPIC \
     $(python3 -m pybind11 --includes) \
     scanner.cpp -o scanner$(python3-config --extension-suffix)
 ```
