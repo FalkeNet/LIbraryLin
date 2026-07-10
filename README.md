@@ -42,5 +42,5 @@ Usar esse comando pode gerar algumas pedições por exemplo instalar o Python3 c
 
 1. **Clonar o repositório:**
    ```bash
-   git clone [https://github.com/FalkeNet/LIbraryLin.git](https://github.com/FalkeNet/LIbraryLin.git)
+   git clone https://github.com/FalkeNet/LIbraryLin.git
    cd LIbraryLin
