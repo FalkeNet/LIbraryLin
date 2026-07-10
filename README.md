@@ -19,7 +19,7 @@
 O projeto foi desenvolvido utilizando as seguintes tecnologias:
 
 - **Linguagem Principal:** [Python / C++ ]
-- **Dependências Chave:** [pywebview < para frontend, pybind11]
+- **Dependências Chave:** [pywebview < para frontend, pybind11 < backend]
 - **Ambiente Alvo:** Linux
 
 ## 📦 Instalação e Pré-requisitos
