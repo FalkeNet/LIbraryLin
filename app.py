@@ -1,7 +1,7 @@
 """
 app.py — LibraryLin com pywebview.
 
-A UI é HTML/CSS puro (ui/index.html), reaproveitando o mesmo visual do site.
+A UI é HTML/CSS puro em (ui/index.html), reaproveitando o mesmo visual do site.
 O pesado continua em C++ (scanner.cpp compilado via pybind11); este arquivo
 só faz a ponte entre o JS da janela e o módulo `scanner`.
 """
