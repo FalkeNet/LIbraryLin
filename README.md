@@ -30,6 +30,13 @@ O projeto foi desenvolvido utilizando as seguintes tecnologias:
 pip install pybind11 --break-system-packages            
 ```
 
+### Compilar C++
+```bash c++ -O3 -Wall -shared -std=c++17 -fPIC \
+    $(python3 -m pybind11 --includes) \
+    scanner.cpp -o scanner$(python3-config --extension-suffix)
+```
+Usar esse comando pode gerar algumas pedições por exemplo instalar o Python3 config, apenas use o comando que esta pedindo!
+
 ### Passo a Passo
 
 1. **Clonar o repositório:**
