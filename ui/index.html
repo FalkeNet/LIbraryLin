@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>LibraryLin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0f14;
+    --bg-panel: #10161d;
+    --border: #1f2830;
+    --text: #d8dee6;
+    --text-dim: #6b7785;
+    --accent: #f2a65a;
+    --accent-2: #5fd3c4;
+    --danger: #ff5f57;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+  }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo { font-family: 'JetBrains Mono', monospace; font-size: 16px; }
+  .logo span { color: var(--accent); }
+
+  .container { padding: 20px; }
+
+  .term {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 0 0 1px rgba(242,166,90,0.03), 0 20px 60px -20px rgba(0,0,0,0.7);
+  }
+
+  .controls {
+    display: flex;
+    gap: 10px;
+    align-items: end;
+    flex-wrap: wrap;
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  /* WebKitGTK desenha o <select> e o dropdown dele com o tema nativo do GTK,
+     ignorando a maior parte do CSS. color-scheme avisa o motor pra usar a
+     variante escura dos controles nativos (funciona no <select> normal). */
+  html { color-scheme: dark; }
+
+  input, select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    outline: none;
+  }
+  input:focus, select:focus { border-color: var(--accent); }
+  input[type="number"], input[type="text"] { width: 110px; }
+
+  /* dropdown customizado do processo (não usa <select> nativo, então
+     controlamos 100% do visual, inclusive a lista aberta) */
+  .process-dropdown { position: relative; width: 240px; }
+  .process-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    padding: 7px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: left;
+  }
+  .process-trigger:hover { border-color: var(--accent); }
+  .process-trigger .chev { margin-left: auto; color: var(--text-dim); font-size: 11px; }
+
+  .process-avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: #0b0f14;
+    flex-shrink: 0;
+  }
+
+  .process-list {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    width: 100%;
+    max-height: 260px;
+    overflow-y: auto;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 12px 30px -10px rgba(0,0,0,0.6);
+    z-index: 20;
+    display: none;
+  }
+  .process-list.open { display: block; }
+  .process-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+  .process-item:hover { background: rgba(242,166,90,0.08); }
+  .process-item .pname { color: var(--text); }
+  .process-item .ppid { color: var(--text-dim); margin-left: auto; }
+
+  button {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    border: none;
+    border-radius: 6px;
+    padding: 9px 14px;
+    cursor: pointer;
+    transition: opacity .15s ease;
+  }
+  button:hover { opacity: 0.85; }
+  button:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .btn-primary { background: var(--accent); color: var(--bg); font-weight: 600; }
+  .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost { background: transparent; color: var(--text-dim); border: 1px solid var(--border); padding: 8px 10px; }
+  .btn-small { padding: 5px 10px; font-size: 11px; }
+  .btn-danger-outline { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+
+  .checkbox-field {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    padding-bottom: 8px;
+  }
+  .checkbox-field input { width: auto; padding: 0; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody td {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    padding: 7px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody tr:hover { background: rgba(242,166,90,0.05); }
+  tbody tr.frozen { background: rgba(95,211,196,0.07); }
+  .type-tag {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(95,211,196,0.12);
+    color: var(--accent-2);
+  }
+  .row-actions { display: flex; gap: 6px; }
+
+  .statusbar {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .statusbar .accent { color: var(--accent-2); }
+
+  .results-wrap { max-height: 340px; overflow-y: auto; }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="logo">Library<span>Lin</span></div>
+    <div class="mono" style="color: var(--text-dim); font-size: 12px;" id="langTag">v0.1.0</div>
+  </div>
+
+  <div class="container">
+    <div class="term">
+      <div class="controls">
+        <div class="field">
+          <label data-i18n="process">Processo</label>
+          <div class="process-dropdown" id="processDropdown">
+            <button type="button" class="process-trigger" id="processTrigger">
+              <span id="processTriggerLabel" data-i18n="select_process">Selecione um processo...</span>
+              <span class="chev">▾</span>
+            </button>
+            <div class="process-list" id="processList"></div>
+          </div>
+        </div>
+        <button class="btn-ghost" id="refreshProcessesBtn" title="Atualizar lista">↻</button>
+
+        <div class="field">
+          <label data-i18n="value">Valor</label>
+          <input type="text" id="value" placeholder="100">
+        </div>
+
+        <div class="field" id="typeField">
+          <label data-i18n="type">Tipo</label>
+          <select id="typeSelect">
+            <option value="int32">int32</option>
+            <option value="int16">int16</option>
+            <option value="int64">int64</option>
+            <option value="float">float</option>
+            <option value="double">double</option>
+          </select>
+        </div>
+
+        <div class="checkbox-field">
+          <input type="checkbox" id="aiModeCheckbox">
+          <label for="aiModeCheckbox">
+            <span data-i18n="ai_mode">Modo IA</span>
+            <span style="opacity:.7;">(<span data-i18n="ai_mode_hint">detecta o tipo automaticamente</span>)</span>
+          </label>
+        </div>
+
+        <button class="btn-primary" id="firstScanBtn" data-i18n="first_scan">First Scan</button>
+
+        <div class="field">
+          <label data-i18n="type">Tipo de scan</label>
+          <select id="scanType">
+            <option value="exact" data-i18n="scan_type_exact">exato</option>
+            <option value="changed" data-i18n="scan_type_changed">mudou</option>
+            <option value="unchanged" data-i18n="scan_type_unchanged">não mudou</option>
+            <option value="increased" data-i18n="scan_type_increased">aumentou</option>
+            <option value="decreased" data-i18n="scan_type_decreased">diminuiu</option>
+          </select>
+        </div>
+        <button class="btn-outline" id="nextScanBtn" data-i18n="next_scan" disabled>Next Scan</button>
+        <button class="btn-outline" id="refreshBtn" data-i18n="refresh" disabled>Atualizar</button>
+      </div>
+
+      <div class="results-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="address">Endereço</th>
+              <th data-i18n="detected_type">Tipo</th>
+              <th data-i18n="current_value">Valor atual</th>
+              <th data-i18n="actions">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody"></tbody>
+        </table>
+      </div>
+
+      <div class="statusbar">
+        <span id="statusText" data-i18n="status_ready">pronto.</span>
+        <span><span class="accent" id="resultCount">0</span> <span data-i18n="results_count">resultados</span></span>
+      </div>
+    </div>
+  </div>
+
+<script>
+  let STR = {}; // preenchido pelas traduções
+  let selectedPid = null;
+  let selectedProcessLabel = null;
+
+  const processDropdown = document.getElementById('processDropdown');
+  const processTrigger = document.getElementById('processTrigger');
+  const processTriggerLabel = document.getElementById('processTriggerLabel');
+  const processList = document.getElementById('processList');
+  const refreshProcessesBtn = document.getElementById('refreshProcessesBtn');
+  const valueInput = document.getElementById('value');
+  const typeField = document.getElementById('typeField');
+  const typeSelect = document.getElementById('typeSelect');
+  const aiModeCheckbox = document.getElementById('aiModeCheckbox');
+  const scanTypeSelect = document.getElementById('scanType');
+  const firstScanBtn = document.getElementById('firstScanBtn');
+  const nextScanBtn = document.getElementById('nextScanBtn');
+  const refreshBtn = document.getElementById('refreshBtn');
+  const resultsBody = document.getElementById('resultsBody');
+  const statusText = document.getElementById('statusText');
+  const resultCount = document.getElementById('resultCount');
+
+  function t(key, fallback) {
+    return (STR && STR[key]) || fallback || key;
+  }
+
+  function applyTranslations() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (STR[key]) el.textContent = STR[key];
+    });
+    refreshProcessesBtn.title = t('refresh_processes', 'Atualizar lista');
+  }
+
+  aiModeCheckbox.addEventListener('change', () => {
+    typeField.style.opacity = aiModeCheckbox.checked ? '0.35' : '1';
+    typeSelect.disabled = aiModeCheckbox.checked;
+  });
+
+  // cor determinística a partir do nome, pra cada processo ter um avatar consistente
+  function nameToColor(name) {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const hue = Math.abs(hash) % 360;
+    return `hsl(${hue}, 55%, 55%)`;
+  }
+
+  async function loadProcesses() {
+    const procs = await window.pywebview.api.list_processes();
+    processList.innerHTML = '';
+
+    for (const p of procs) {
+      const item = document.createElement('div');
+      item.className = 'process-item';
+      const initial = (p.name[0] || '?').toUpperCase();
+      item.innerHTML = `
+        <span class="process-avatar" style="background:${nameToColor(p.name)}">${initial}</span>
+        <span class="pname">${p.name}</span>
+        <span class="ppid">${p.pid}</span>`;
+      item.addEventListener('click', () => {
+        selectedPid = p.pid;
+        selectedProcessLabel = `${p.name} (${p.pid})`;
+        processTriggerLabel.textContent = selectedProcessLabel;
+        processList.classList.remove('open');
+      });
+      processList.appendChild(item);
+    }
+
+    // se o processo selecionado não existe mais na lista nova, limpa a seleção
+    if (selectedPid && !procs.some(p => p.pid === selectedPid)) {
+      selectedPid = null;
+      processTriggerLabel.textContent = t('select_process', 'Selecione um processo...');
+    }
+  }
+  refreshProcessesBtn.addEventListener('click', loadProcesses);
+
+  processTrigger.addEventListener('click', () => {
+    processList.classList.toggle('open');
+  });
+  document.addEventListener('click', (e) => {
+    if (!processDropdown.contains(e.target)) {
+      processList.classList.remove('open');
+    }
+  });
+
+  function renderResults(rows) {
+    resultsBody.innerHTML = '';
+    resultCount.textContent = rows.length;
+    for (const [addr, type, value, frozen] of rows) {
+      const tr = document.createElement('tr');
+      if (frozen) tr.classList.add('frozen');
+      tr.innerHTML = `
+        <td>${addr}</td>
+        <td><span class="type-tag">${type}</span></td>
+        <td class="value-cell">${value}</td>
+        <td class="row-actions">
+          <button class="btn-outline btn-small edit-btn">${t('edit','Editar')}</button>
+          <button class="${frozen ? 'btn-danger-outline' : 'btn-outline'} btn-small freeze-btn">
+            ${frozen ? t('unfreeze','Descongelar') : t('freeze','Congelar')}
+          </button>
+        </td>`;
+      tr.querySelector('.edit-btn').addEventListener('click', () => editValue(addr, type));
+      tr.querySelector('.freeze-btn').addEventListener('click', () => toggleFreeze(addr, type, value, tr));
+      resultsBody.appendChild(tr);
+    }
+  }
+
+  async function editValue(addrHex, type) {
+    const novo = prompt(t('prompt_new_value', 'Novo valor:'));
+    if (novo === null || novo.trim() === '') return;
+    try {
+      await window.pywebview.api.write_value(addrHex, type, parseFloat(novo));
+      statusText.textContent = t('status_written', 'valor escrito em') + ' ' + addrHex;
+      refresh();
+    } catch (e) {
+      statusText.textContent = t('status_error', 'erro:') + ' ' + e;
+    }
+  }
+
+  async function toggleFreeze(addrHex, type, value, rowEl) {
+    const frozenNow = await window.pywebview.api.toggle_freeze(addrHex, type, parseFloat(value));
+    statusText.textContent = (frozenNow ? t('status_frozen','congelado:') : t('status_unfrozen','descongelado:')) + ' ' + addrHex;
+    rowEl.classList.toggle('frozen', frozenNow);
+    const btn = rowEl.querySelector('.freeze-btn');
+    btn.textContent = frozenNow ? t('unfreeze','Descongelar') : t('freeze','Congelar');
+    btn.className = 'btn-small ' + (frozenNow ? 'btn-danger-outline' : 'btn-outline');
+  }
+
+  firstScanBtn.addEventListener('click', async () => {
+    const pid = selectedPid;
+    const value = valueInput.value.trim();
+    if (!pid || value === '') {
+      statusText.textContent = t('status_fill_fields', 'selecione um processo e preencha o valor.');
+      return;
+    }
+    statusText.textContent = t('status_scanning', 'escaneando...');
+
+    let rows;
+    if (aiModeCheckbox.checked) {
+      rows = await window.pywebview.api.ai_scan(pid, parseFloat(value));
+    } else {
+      rows = await window.pywebview.api.first_scan(pid, typeSelect.value, parseFloat(value));
+    }
+    renderResults(rows);
+    nextScanBtn.disabled = false;
+    refreshBtn.disabled = false;
+    statusText.textContent = t('status_first_scan_done', 'first scan concluído.');
+  });
+
+  nextScanBtn.addEventListener('click', async () => {
+    const scanType = scanTypeSelect.value;
+    const value = valueInput.value.trim();
+    statusText.textContent = t('status_refining', 'refinando...');
+    const rows = await window.pywebview.api.next_scan(scanType, value === '' ? null : parseFloat(value));
+    renderResults(rows);
+    statusText.textContent = t('status_next_scan_done', 'next scan concluído.');
+  });
+
+  async function refresh() {
+    const rows = await window.pywebview.api.current_results();
+    renderResults(rows);
+  }
+  refreshBtn.addEventListener('click', refresh);
+
+  window.addEventListener('pywebviewready', async () => {
+    const data = await window.pywebview.api.get_translations();
+    STR = data.strings || {};
+    document.documentElement.lang = data.lang || 'pt-br';
+    document.getElementById('langTag').textContent = 'v0.1.0 · ' + (data.lang || 'pt-br');
+    applyTranslations();
+    loadProcesses();
+  });
+</script>
+
+</body>
+</html>
